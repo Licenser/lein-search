@@ -1,0 +1,14 @@
+# lein-search
+
+Lein search allows searching and adding of dependencies on clojars through a simple command line interface.
+
+## Usage
+
+lein update (update local clojar index - this is cached to save bandwith)
+lein search <regexp> (searches clojars for this regexp)
+lein add <regexp> (allows you to add a artifact to your dependencies)
+
+## License
+Copyright © 2009 Heinz N. Gies.
+
+This code is published under the EPL, have fun! See LICENSE.html for the booring stuff.
