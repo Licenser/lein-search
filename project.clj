@@ -1,6 +1,1 @@
-(defproject lein-search "0.0.0-SNAPSHOT"
-  :namespaces [leiningen.add leiningen.search leiningen.update]
-  :description "Leinigen plugin to search and add dependencies from clojars"
-  :dependencies [[org.clojure/clojure "1.1.0"]
-	         [clj-tagsoup "0.1.1"]
-                 [org.clojure/clojure-contrib "1.1.0"]])
+(defproject lein-search "0.2.0-SNAPSHOT" :namespaces [leiningen.add leiningen.search leiningen.update-repo] :description "Leinigen plugin to search and add dependencies from clojars" :dependencies ([org.clojure/clojure "1.1.0"] [org.clojure/clojure-contrib "1.1.0"]) :dev-dependencies [[lein-clojars "0.5.0-SNAPSHOT"] [swank-clojure/swank-clojure "1.1.0"]])
