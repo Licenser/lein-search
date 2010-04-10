@@ -1,5 +1,5 @@
 (ns leiningen.add
-  "Interactively adds a dependency from clojars."
+  "Interactively adds a dependency from clojars. With one parameter it will add the latest stable of the corresponding version with two arguments it will take the second argument as version."
   (:use (clojure.contrib duck-streams seq-utils str-utils)
 	[leiningen.update-repo :only [*lein-dir*]]
 	[leiningen.search :only [read-clj search-clojar artifact-name]]))
