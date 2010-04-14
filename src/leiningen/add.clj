@@ -7,14 +7,15 @@
 
 (defn good-read-line [] 
   (binding [*in* (-> System/in (java.io.InputStreamReader.) (clojure.lang.LineNumberingPushbackReader.))] (read-line)))
-(defn add-artifact [project artifact version]
+
+(defn add-artifact [project type artifact version]
   (reverse 
    (first 
     (reduce 
      (fn [[form is-deps?] f] 
        (if is-deps? 
 	 [(cons (cons [(symbol artifact) version] f) form) false]
-	 [(cons f form) (= f :dependencies)])) ['() false] project))))
+	 [(cons f form) (= f type)])) ['() false] project))))
 
 (defn find-clojar [what]
   (let [p (re-pattern what)]
@@ -78,4 +79,4 @@
 	  (println "Adding:" a v)
 	  (with-open [o (writer (str (:root project) "/project.clj"))]
 	    (binding [*out* o]
-	      (pr (add-artifact p a v)))))))))
+	      (pr (add-artifact p :dependencies a v)))))))))
