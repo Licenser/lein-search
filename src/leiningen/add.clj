@@ -1,5 +1,7 @@
 (ns leiningen.add
-  "Interactively adds a dependency from clojars. With one parameter it will add the latest stable of the corresponding version with two arguments it will take the second argument as version."
+  "Interactively adds a dependency from clojars.
+  With one parameter it will add the latest stable of the corresponding version with two arguments it will take the second argument as version.
+  If the first parameter is --dev or -d it will work exactly as without --dev just that it will add a dev dependency."
   (:use (clojure.contrib duck-streams seq-utils str-utils)
 	[leiningen.update-repo :only [*lein-dir*]]
 	[leiningen.search :only [read-clj search-clojar artifact-name]]))
@@ -67,7 +69,10 @@
     (get-version (first res))))
 
 (defn add [project artifact & args]
-  (let [version (first args)
+  (let [dev (or (= artifact "--dev") (= artifact "-d"))
+	artifact (if dev (first args) artifact)
+	args (if dev (rest args) args)
+	version (first args)
 	p (:root project)
 	res  (first (find-clojar artifact))]
     (if (empty? res)
@@ -79,4 +84,4 @@
 	  (println "Adding:" a v)
 	  (with-open [o (writer (str (:root project) "/project.clj"))]
 	    (binding [*out* o]
-	      (pr (add-artifact p :dependencies a v)))))))))
+	      (pr (add-artifact p (if dev :dev-dependencies :dependencies) a v)))))))))
