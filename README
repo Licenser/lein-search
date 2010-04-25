@@ -4,9 +4,18 @@ Lein search allows searching and adding of dependencies on clojars through a sim
 
 ## Usage
 
-lein update (update local clojar index - this is cached to save bandwith)
+lein update-repo (update local clojar index - this is cached to save bandwith)
 lein search <regexp> (searches clojars for this regexp)
-lein add <regexp> (allows you to add a artifact to your dependencies)
+lein add [-d|--dev] <artifact> (allows you to add a artifact to your development dependencies)
+lein add <artifact> (allows you to add a artifact to your dependencies)
+lein update (updates all artifacts in your deps, asking for each one if you'd like it)
+
+artifact syntax:
+
+lein-search - latest stable official release (as in [lein-search/lein-search "whatever is latest stable"])
+lein-search "1.0.0-SNAPSHOT" - one specific version of the official release
+org.clojars.wuschel/lein-search - a non official release, and it's latest stable
+org.clojars.wuschel/lein-search  "42.2.3" - a non official release, and it's latest stable
 
 ## License
 Copyright © 2009 Heinz N. Gies.
