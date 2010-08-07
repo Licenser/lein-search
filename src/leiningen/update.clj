@@ -32,20 +32,19 @@
       [artifact version nil])))
   
 (defn update [project & args]
-  (let [deps (:dependencies project)
-	dev-deps (:dev-dependencies project)
-	p (reduce (fn [p [artifact version new-version]]
-		    (if (and new-version (ask-for-update artifact version new-version))
-		      (update-artifact p :dev-dependencies (str artifact) new-version)
-		      p))
-		  (reduce (fn [p [artifact version new-version]]
-			    (if (and new-version (ask-for-update artifact version new-version))
-			      (update-artifact p :dependencies (str artifact) new-version)
-			p))
-			  (read-clj (str (:root project) "/project.clj"))
-			  (map find-updates deps))
-		  (map find-updates dev-deps))]
-    (with-open [o (writer (str (:root project) "/project.clj"))]
+  (let [project-clj-path (str (:root project) "/project.clj")
+        maybe-add-updates
+        (fn [dep-type initial]
+          (reduce (fn [p [artifact version new-version]]
+                    (if (and new-version (ask-for-update artifact version new-version))
+                      (update-artifact p dep-type (str artifact) new-version)
+                      p))
+                  initial
+                  (map find-updates (dep-type project))))
+	updated-project (->> (read-clj project-clj-path)
+                             (maybe-add-updates :dependencies)
+                             (maybe-add-updates :dev-dependencies))]
+    (with-open [o (writer project-clj-path)]
       (binding [*out* o]
 	(pr p)))))
     
