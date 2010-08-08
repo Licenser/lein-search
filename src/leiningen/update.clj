@@ -46,7 +46,5 @@
 	updated-project (->> (read-clj project-clj-path)
                              (maybe-add-updates :dependencies)
                              (maybe-add-updates :dev-dependencies))]
-    (with-open [o (writer project-clj-path)]
-      (binding [*out* o]
-	(pr updated-project)))))
-    
+    (with-out-writer project-clj-path
+      (pr updated-project))))
