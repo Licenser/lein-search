@@ -6,30 +6,25 @@
 (def *lein-dir* (str (System/getProperty "user.home") "/.lein"))
 
 (defn split-version [v]
-  (if (re-find #"(\d+)\.(\d+)\.(\d+)(-.*)?" v)
-    (let [[_ major minor patch suffix] (re-find #"(\d+)\.(\d+)\.(\d+)(?:-(.*))?" v)]
-      [(Integer/parseInt major) (Integer/parseInt minor) (Integer/parseInt patch) (or suffix "")])
-    '(0 0 0 "")))
+  (if-let [[_ major minor patch suffix] (re-find #"(\d+)\.(\d+)(?:\.(\d+))?(?:-(.*))?" v)]
+    [(Integer/parseInt major) (Integer/parseInt minor) (Integer/parseInt (or patch "0")) (or suffix "")]
+    [0 0 0 ""]))
 
 (defn compare-versions [v1 v2]
-  (let [[v1-major v1-minor v1-patch v1-suffix] (split-version v1)
-	[v2-major v2-minor v2-patch v2-suffix] (split-version v2)]
-    (cond
-     (> v1-major v2-major) 1
-     (< v1-major v2-major) -1
-     :else (cond
-	    (> v1-minor v2-minor) 1
-	    (< v1-minor v2-minor) -1
-	    :else (cond
-		   (> v1-patch v2-patch) 1
-		   (< v1-patch v2-patch) -1
-		   :else (cond
-			  (= v1-suffix v2-suffix) 0
-			  (= v1-suffix "") 1
-			  (= v2-suffix "") -1
-			  (= v1-suffix "SNAPSHOT") 1
-			  (= v2-suffix "SNAPSHOT") -1
-			  :else (.compareTo v1-suffix v2-suffix)))))))
+  (let [vers1 (split-version v1)
+        vers2 (split-version v2)
+        version-comparison (.compareTo (subvec vers1 0 3) (subvec vers2 0 3))]
+    (if (zero? version-comparison)
+      (let [v1-suffix (last vers1)
+            v2-suffix (last vers2)]
+        (cond
+         (= v1-suffix v2-suffix) 0
+         (= v1-suffix "") 1
+         (= v2-suffix "") -1
+         (= v1-suffix "SNAPSHOT") 1
+         (= v2-suffix "SNAPSHOT") -1
+         :else (.compareTo v1-suffix v2-suffix)))
+      version-comparison)))
 
 (defn read-index [url]
   (with-open [r (PushbackReader. (InputStreamReader. (GZIPInputStream. (.openStream (URL. url)))))]
