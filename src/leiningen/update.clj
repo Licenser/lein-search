@@ -6,14 +6,20 @@
 	[leiningen.update-repo :only [compare-versions]]))
 
 
-(defn update-artifact [project type artifact version]
-  (reverse 
-   (first 
-    (reduce 
-     (fn [[form is-deps?] f] 
-       (if is-deps?
-	 [(cons (map (fn [[a v]] (if (= a (symbol artifact)) [a version] [a v])) f) form) false]
-	 [(cons f form) (= f type)])) ['() false] project))))
+(defn update-artifact [project dep-type artifact new-version]
+  (->> project
+       (reduce
+        (fn [[form prev] f]
+          (if (= prev dep-type)
+            [(cons (vec (for [[a v] f]
+                          [a (if (= a (symbol artifact))
+                               new-version
+                               v)]))
+                   form) nil]
+            [(cons f form) f]))
+        [() nil])
+       first
+       reverse))
 
 (defn yes-or-no-prompt [question]
   (print question " (y/n) ")
