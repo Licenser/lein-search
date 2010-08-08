@@ -1,7 +1,7 @@
 (ns leiningen.update-repo
   "Updates the clojars.org repositories index."
-  (:use clojure.contrib.duck-streams)
-  (:import (java.io File InputStreamReader PushbackReader) java.util.zip.GZIPInputStream java.net.URL))
+  (:use [clojure.contrib.duck-streams :only (reader writer with-out-writer)])
+  (:import (java.io File) java.util.zip.GZIPInputStream java.net.URL))
 
 (def *lein-dir* (str (System/getProperty "user.home") "/.lein"))
 
@@ -27,7 +27,7 @@
       version-comparison)))
 
 (defn read-index [url]
-  (with-open [r (PushbackReader. (InputStreamReader. (GZIPInputStream. (.openStream (URL. url)))))]
+  (with-open [r (reader (GZIPInputStream. (.openStream (URL. url))))]
       (loop [result [] code (read r false false)]
 	(if code
 	  (recur (conj result code) (read r false false))
@@ -35,6 +35,6 @@
 
 (defn update-repo [project & args]
   (if (not (.exists (File. *lein-dir*))) (.mkdirs (File. *lein-dir*)))
-  (with-open [w (writer (str  *lein-dir* "/clojars"))]
-    (println "Getting the list of packages on clojars.org ...")
-    (binding [*out* w] (pr (read-index "http://clojars.org/repo/feed.clj.gz")))))
+  (println "Getting the list of packages on clojars.org ...")
+  (with-out-writer (writer (str  *lein-dir* "/clojars"))
+    (pr (read-index "http://clojars.org/repo/feed.clj.gz"))))
