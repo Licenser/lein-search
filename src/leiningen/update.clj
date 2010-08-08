@@ -49,5 +49,5 @@
                              (maybe-add-updates :dev-dependencies))]
     (with-open [o (writer project-clj-path)]
       (binding [*out* o]
-	(pr p)))))
+	(pr updated-project)))))
     
