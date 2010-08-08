@@ -6,7 +6,7 @@
 (def *lein-dir* (str (System/getProperty "user.home") "/.lein"))
 
 (defn split-version [v]
-  (if-let [[_ major minor patch suffix] (re-find #"(\d+)\.(\d+)(?:\.(\d+))?(?:-(.*))?" v)]
+  (if-let [[_ major minor patch suffix] (when v (re-find #"(\d+)\.(\d+)(?:\.(\d+))?(?:-(.*))?" v))]
     [(Integer/parseInt major) (Integer/parseInt minor) (Integer/parseInt (or patch "0")) (or suffix "")]
     [0 0 0 ""]))
 
