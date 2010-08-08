@@ -15,14 +15,17 @@
 	 [(cons (map (fn [[a v]] (if (= a (symbol artifact)) [a version] [a v])) f) form) false]
 	 [(cons f form) (= f type)])) ['() false] project))))
 
-(defn ask-for-update [artifact version new-version]
-  (print (str "You are currently using "artifact" in version "version". Do you want to update to "new-version"? (y/n)"))
+(defn yes-or-no-prompt [question]
+  (print question " (y/n)")
   (flush)
   (let [r (chomp (good-read-line))]
     (cond
      (= r "y") true
      (= r "n") false
-     :else (recur artifact version new-version))))
+     :else (recur question))))
+
+(defn ask-for-update [artifact version new-version]
+  (yes-or-no-prompt (str "You are currently using "artifact" in version "version". Do you want to update to "new-version"?")))
 
 (defn find-updates [[artifact version]]
   (let [res (first (find-clojar (str artifact)))
