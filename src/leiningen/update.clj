@@ -1,7 +1,7 @@
 (ns leiningen.update
   "lein update checks for newer versions of currently used dependencies and aks the user if they should be updated to the latest stable."
   (:use (clojure.contrib duck-streams seq-utils str-utils)
-	[leiningen.add :only [latest-stable add-artifact find-clojar good-read-line update-dependency-list]]
+	[leiningen.add :only [latest-stable add-artifact find-clojar good-read-line update-dependency-list prompt-for-input]]
 	[leiningen.search :only [read-clj]]
 	[leiningen.update-repo :only [compare-versions]]))
 
@@ -15,13 +15,10 @@
                                v)]))))
 
 (defn yes-or-no-prompt [question]
-  (print question " (y/n) ")
-  (flush)
-  (let [r (chomp (good-read-line))]
-    (cond
-     (= r "y") true
-     (= r "n") false
-     :else (recur question))))
+  (condp (= (prompt-for-input (str question " (y/n)")))
+      "y" :>> true
+      "n" :>> false
+      (recur question)))
 
 (defn ask-for-update [artifact version new-version]
   (yes-or-no-prompt (str "You are currently using "artifact" in version "version". Do you want to update to "new-version"?")))

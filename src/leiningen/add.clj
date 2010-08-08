@@ -10,6 +10,15 @@
 (defn good-read-line [] 
   (binding [*in* (-> System/in (java.io.InputStreamReader.) (clojure.lang.LineNumberingPushbackReader.))] (read-line)))
 
+(defn prompt-for-input [prompt]
+  (print prompt)
+  (flush)
+  (chomp (good-read-line)))
+
+(defn prompt-for-number [prompt]
+  (try (Integer/parseInt (prompt-for-input prompt))
+       (catch java.lang.NumberFormatException e nil)))
+
 (defn update-dependency-list
   "Modify the project's dependency list of the given type by passing it through f"
   [project dep-type f]
@@ -38,44 +47,37 @@
 	       (= group-id group)))
 	    (read-clj (str *lein-dir* "/clojars")))))))
 
-(defn get-version [artifact]
-  (if (= 1 (count (second artifact)))
-    [(first artifact) (first (second artifact))]
-    (loop [versions (second artifact)]
-      (println 
-       (first 
-	(reduce 
-	 (fn [[s i] v] 
-	   [(str s (if (> i 1) "\n") i ": " (first artifact) " " v) 
-	    (inc i)]) ["" 1] versions)))
-      (print "Please select a version: ")
-      (flush)
-      (let [v (try (Integer/parseInt (chomp (good-read-line))) (catch java.lang.NumberFormatException e -1))]
-	(if (or (nil? v) (nil? (nth versions (dec v) nil)))
-	  (recur versions)
-	  [(first artifact) (nth versions (dec v))])))))
+(defn choose-from-numbered-list-if-multiple
+  "Return first item immediately if there is only one, otherwise prompt the user
+with a numbered list of choices."
+  [choices prompt formatter]
+  (if (= 1 (count choices))
+     (first choices)
+     (do (println
+          (str-join "\n"
+                    (for [[n i] (map vector (iterate inc 1) choices)]
+                      (str n ": " (formatter i)))))
+         (loop []
+           (let [v (prompt-for-number (str prompt ": "))]
+             (if (or (nil? v) (nil? (nth choices (dec v) nil)))
+               (recur)
+               (nth choices (dec v))))))))
+
+(defn get-version [[artifact-name available-versions]]
+  [artifact-name
+   (choose-from-numbered-list-if-multiple available-versions
+                                          "Please select a version"
+                                          (fn [v] (str artifact-name " " v)))])
 
 (defn latest-stable [versions]
   (first (filter (partial re-find #"^(\d+).(\d+).(\d+)$") versions)))
 
 (defn get-artifact-id [res]
-  (if (> (count res) 1)
-    (do
-      (println
-       (first 
-	(reduce 
-	 (fn [[s i] a] 
-	   [(str s (if (> i 1) "\n") i ": " (first a) "(" (str-join ", " (second a)) ")") 
-	    (inc i)]) ["" 1] res)))
-      (print "Please select an artifact: ")
-      (flush)
-      (read-line)
-      (let [a (try (Integer/parseInt (chomp (good-read-line))) (catch java.lang.NumberFormatException e -1))]
-	(if (or (nil? a) (nil? (nth res (dec a) nil)))
-	  (recur res)
-	  (let [artifact (nth res (dec a))]
-	    (get-version artifact)))))
-    (get-version (first res))))
+  (get-version
+   (choose-from-numbered-list-if-multiple res
+                                          "Please select an artifact"
+                                          (fn [[name vers]]
+                                            (str name " (" (str-join ", " vers) ")")))))
 
 (defn add [project artifact & args]
   (let [dev (or (= artifact "--dev") (= artifact "-d"))
