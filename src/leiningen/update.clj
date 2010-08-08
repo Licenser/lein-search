@@ -16,7 +16,7 @@
 	 [(cons f form) (= f type)])) ['() false] project))))
 
 (defn yes-or-no-prompt [question]
-  (print question " (y/n)")
+  (print question " (y/n) ")
   (flush)
   (let [r (chomp (good-read-line))]
     (cond
