@@ -10,14 +10,23 @@
 (defn good-read-line [] 
   (binding [*in* (-> System/in (java.io.InputStreamReader.) (clojure.lang.LineNumberingPushbackReader.))] (read-line)))
 
+(defn update-dependency-list
+  "Modify the project's dependency list of the given type by passing it through f"
+  [project dep-type f]
+  (->> project
+       (reduce
+        (fn [[form prev] n]
+          (if (= prev dep-type)
+            [(cons (vec (f n)) form) nil]
+            [(cons n form) n]))
+        [() nil])
+       first
+       reverse))
+
 (defn add-artifact [project type artifact version]
-  (reverse 
-   (first 
-    (reduce 
-     (fn [[form is-deps?] f] 
-       (if is-deps? 
-	 [(cons (cons [(symbol artifact) version] f) form) false]
-	 [(cons f form) (= f type)])) ['() false] project))))
+  (update-dependency-list project type
+                          (fn [deps]
+                            (cons [(symbol artifact) version] deps))))
 
 (defn find-clojar [what]
   (let [p (re-pattern what)]

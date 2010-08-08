@@ -1,25 +1,18 @@
 (ns leiningen.update
   "lein update checks for newer versions of currently used dependencies and aks the user if they should be updated to the latest stable."
   (:use (clojure.contrib duck-streams seq-utils str-utils)
-	[leiningen.add :only [latest-stable add-artifact find-clojar good-read-line]]
+	[leiningen.add :only [latest-stable add-artifact find-clojar good-read-line update-dependency-list]]
 	[leiningen.search :only [read-clj]]
 	[leiningen.update-repo :only [compare-versions]]))
 
 
 (defn update-artifact [project dep-type artifact new-version]
-  (->> project
-       (reduce
-        (fn [[form prev] f]
-          (if (= prev dep-type)
-            [(cons (vec (for [[a v] f]
-                          [a (if (= a (symbol artifact))
+  (update-dependency-list project dep-type
+                          (fn [deps]
+                            (for [[a v] deps]
+                              [a (if (= a (symbol artifact))
                                new-version
-                               v)]))
-                   form) nil]
-            [(cons f form) f]))
-        [() nil])
-       first
-       reverse))
+                               v)]))))
 
 (defn yes-or-no-prompt [question]
   (print question " (y/n) ")
@@ -39,7 +32,7 @@
     (if (and res (< 0  (compare-versions latest version)))
       [artifact version latest]
       [artifact version nil])))
-  
+
 (defn update [project & args]
   (let [project-clj-path (str (:root project) "/project.clj")
         maybe-add-updates
