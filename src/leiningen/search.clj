@@ -11,9 +11,9 @@
 
 (defn search-clojar [what]
   (let [p (re-pattern what)]
-    (doall (filter 
+    (doall (filter
 	    (fn [{description :description artifact-id :artifact-id group-id :group-id}] 
-	      (or 
+	      (or
 	       (re-find p (or description ""))
 	       (re-find p artifact-id)
 	       (re-find p group-id)))
@@ -32,7 +32,7 @@
 	what (if show-versions (first args) what)]
     (if (.exists (File. (str *lein-dir* "/clojars")))
       (let [m (search-clojar what)]
-	(println (str "Results for " what ":"))
+	(println "Results for " what ":")
 	(if show-versions
 	  (println (str-join "\n" (map (fn [{versions :versions artifact-id :artifact-id group-id :group-id}] (str (artifact-name group-id artifact-id) ": " (str-join ", " versions))) m)))
 	  (println (str-join "\n" (map (fn [{description :description artifact-id :artifact-id group-id :group-id}] (format "%-40s - %s" (artifact-name group-id artifact-id) (re-sub #"\n\s*" " " (or description "No description given")))) m)))))

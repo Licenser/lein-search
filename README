@@ -21,3 +21,7 @@ org.clojars.wuschel/lein-search  "42.2.3" - a non official release, and it's lat
 Copyright © 2009 Heinz N. Gies.
 
 This code is published under the EPL, have fun! See LICENSE.html for the booring stuff.
+
+## Thanks
+
+Big thanks to purcell@github for a bunch of improvements and cleanup in the code.
