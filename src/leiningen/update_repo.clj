@@ -36,5 +36,5 @@
 (defn update-repo [project & args]
   (if (not (.exists (File. *lein-dir*))) (.mkdirs (File. *lein-dir*)))
   (println "Getting the list of packages on clojars.org ...")
-  (with-out-writer (writer (str  *lein-dir* "/clojars"))
+  (with-out-writer (str  *lein-dir* "/clojars")
     (pr (read-index "http://clojars.org/repo/feed.clj.gz"))))
