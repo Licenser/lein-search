@@ -91,8 +91,9 @@ with a numbered list of choices."
       (if (and version (not-any? (partial = version) (:versions res)))
 	(println "Sorry; there is no version" version "for" (artifact-name res) ". Try one of:" (str-join ", " (:versions res)))
 	(let [[a v] [(artifact-name res) (if version version (latest-stable (:versions res)))]
-	      p (read-clj (str (:root project) "/project.clj"))]
+              project-clj-path (str (:root project) "/project.clj")
+	      p (read-clj project-clj-path)]
 	  (println "Adding:" a v)
-	  (with-open [o (writer (str (:root project) "/project.clj"))]
+	  (with-open [o (writer project-clj-path)]
 	    (binding [*out* o]
 	      (pr (add-artifact p (if dev :dev-dependencies :dependencies) a v)))))))))
