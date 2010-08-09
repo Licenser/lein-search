@@ -15,10 +15,10 @@
                                v)]))))
 
 (defn yes-or-no-prompt [question]
-  (condp (= (prompt-for-input (str question " (y/n)")))
-      "y" :>> true
-      "n" :>> false
-      (recur question)))
+  (condp = (prompt-for-input (str question " (y/n) "))
+    "y" true
+    "n" false
+    (recur question)))
 
 (defn ask-for-update [artifact version new-version]
   (yes-or-no-prompt (str "You are currently using "artifact" in version "version". Do you want to update to "new-version"?")))
