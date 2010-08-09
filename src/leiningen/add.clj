@@ -2,76 +2,15 @@
   "Interactively adds a dependency from clojars.
   With one parameter it will add the latest stable of the corresponding version with two arguments it will take the second argument as version.
   If the first parameter is --dev or -d it will work exactly as without --dev just that it will add a dev dependency."
-  (:use (clojure.contrib duck-streams seq-utils str-utils)
-	[leiningen.update-repo :only [*lein-dir*]]
-	[leiningen.search :only [read-clj search-clojar artifact-name]]))
+  (:use [clojure.contrib.str-utils :only (str-join)]
+        lein-search.util))
 
-
-(defn good-read-line [] 
-  (binding [*in* (-> System/in (java.io.InputStreamReader.) (clojure.lang.LineNumberingPushbackReader.))] (read-line)))
-
-(defn prompt-for-input [prompt]
-  (print prompt)
-  (flush)
-  (chomp (good-read-line)))
-
-(defn prompt-for-number [prompt]
-  (try (Integer/parseInt (prompt-for-input prompt))
-       (catch java.lang.NumberFormatException e nil)))
-
-(defn update-dependency-list
-  "Modify the project's dependency list of the given type by passing it through f"
-  [project dep-type f]
-  (->> project
-       (reduce
-        (fn [[form prev] n]
-          (if (= prev dep-type)
-            [(cons (vec (f n)) form) nil]
-            [(cons n form) n]))
-        [() nil])
-       first
-       reverse))
-
-(defn add-artifact [project type artifact version]
-  (update-dependency-list project type
-                          (fn [deps]
-                            (cons [(symbol artifact) version] deps))))
-
-(defn find-clojar [what]
-  (let [[group artifact] (if-let [match (re-find #"^([^/]+)/(.+)$" what)]
-                          (next match)
-                          [what what])]
-    (->> (read-clj (str *lein-dir* "/clojars"))
-         (filter
-          (fn [{artifact-id :artifact-id group-id :group-id}]
-            (and
-             (= artifact-id artifact)
-             (= group-id group)))))))
-
-(defn choose-from-numbered-list-if-multiple
-  "Return first item immediately if there is only one, otherwise prompt the user
-with a numbered list of choices."
-  [choices prompt formatter]
-  (if (= 1 (count choices))
-     (first choices)
-     (do (println
-          (str-join "\n"
-                    (for [[n i] (map vector (iterate inc 1) choices)]
-                      (str n ": " (formatter i)))))
-         (loop []
-           (let [v (prompt-for-number (str prompt ": "))]
-             (if (or (nil? v) (nil? (nth choices (dec v) nil)))
-               (recur)
-               (nth choices (dec v))))))))
 
 (defn get-version [[artifact-name available-versions]]
   [artifact-name
    (choose-from-numbered-list-if-multiple available-versions
                                           "Please select a version"
                                           (fn [v] (str artifact-name " " v)))])
-
-(defn latest-stable [versions]
-  (first (filter (partial re-find #"^(\d+).(\d+).(\d+)$") versions)))
 
 (defn get-artifact-id [res]
   (get-version
@@ -81,16 +20,6 @@ with a numbered list of choices."
                                             (str name " (" (str-join ", " vers) ")")))))
 
 (defn add [project artifact & args]
-(defn- project-clj-path [project]
-  (str (:root project) "/project.clj"))
-
-(defn read-project-clj [project]
-  (read-clj (project-clj-path project)))
-
-(defn write-project-clj [project forms]
-  (with-out-writer (project-clj-path project)
-    (pr forms)))
-
   (let [dev (or (= artifact "--dev") (= artifact "-d"))
 	artifact (if dev (first args) artifact)
 	args (if dev (rest args) args)
@@ -100,8 +29,8 @@ with a numbered list of choices."
     (if (empty? res)
       (println "Sorry; nothing on clojars that matches" artifact (if version ""))
       (if (and version (not-any? (partial = version) (:versions res)))
-	(println "Sorry; there is no version" version "for" (artifact-name res) ". Try one of:" (str-join ", " (:versions res)))
-	(let [[a v] [(artifact-name res) (if version version (latest-stable (:versions res)))]]
+	(println "Sorry; there is no version" version "for" (clojars-artifact-name res) ". Try one of:" (str-join ", " (:versions res)))
+	(let [[a v] [(clojars-artifact-name res) (if version version (latest-stable (:versions res)))]]
 	  (println "Adding:" a v)
 	  (write-project-clj project
                              (add-artifact (read-project-clj project)
