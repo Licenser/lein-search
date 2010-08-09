@@ -20,7 +20,7 @@
     (recur question)))
 
 (defn ask-for-update [artifact version new-version]
-  (yes-or-no-prompt (str "You are currently using "artifact" in version "version". Do you want to update to "new-version"?")))
+  (yes-or-no-prompt (str "You are currently using "artifact" version "version". Do you want to update to "new-version"?")))
 
 (defn find-updates [[artifact version]]
   (let [res (first (find-clojar (str artifact)))
