@@ -81,6 +81,16 @@ with a numbered list of choices."
                                             (str name " (" (str-join ", " vers) ")")))))
 
 (defn add [project artifact & args]
+(defn- project-clj-path [project]
+  (str (:root project) "/project.clj"))
+
+(defn read-project-clj [project]
+  (read-clj (project-clj-path project)))
+
+(defn write-project-clj [project forms]
+  (with-out-writer (project-clj-path project)
+    (pr forms)))
+
   (let [dev (or (= artifact "--dev") (= artifact "-d"))
 	artifact (if dev (first args) artifact)
 	args (if dev (rest args) args)
@@ -91,10 +101,8 @@ with a numbered list of choices."
       (println "Sorry; nothing on clojars that matches" artifact (if version ""))
       (if (and version (not-any? (partial = version) (:versions res)))
 	(println "Sorry; there is no version" version "for" (artifact-name res) ". Try one of:" (str-join ", " (:versions res)))
-	(let [[a v] [(artifact-name res) (if version version (latest-stable (:versions res)))]
-              project-clj-path (str (:root project) "/project.clj")
-	      p (read-clj project-clj-path)]
+	(let [[a v] [(artifact-name res) (if version version (latest-stable (:versions res)))]]
 	  (println "Adding:" a v)
-	  (with-open [o (writer project-clj-path)]
-	    (binding [*out* o]
-	      (pr (add-artifact p (if dev :dev-dependencies :dependencies) a v)))))))))
+	  (write-project-clj project
+                             (add-artifact (read-project-clj project)
+                                           (if dev :dev-dependencies :dependencies) a v)))))))
