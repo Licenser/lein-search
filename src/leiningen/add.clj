@@ -87,9 +87,9 @@ with a numbered list of choices."
 	p (:root project)
 	res  (first (find-clojar artifact))]
     (if (empty? res)
-      (println "Sorry nothing on clojar that matches" artifact (if version ""))
+      (println "Sorry; nothing on clojars that matches" artifact (if version ""))
       (if (and version (not-any? (partial = version) (:versions res)))
-	(println (str "Println sorry ther is no version " version " for " (artifact-name res) ". Try: " (str-join ", " (:versions res))))
+	(println "Sorry; there is no version" version "for" (artifact-name res) ". Try one of:" (str-join ", " (:versions res)))
 	(let [[a v] [(artifact-name res) (if version version (latest-stable (:versions res)))]
 	      p (read-clj (str (:root project) "/project.clj"))]
 	  (println "Adding:" a v)
