@@ -38,14 +38,15 @@
                             (cons [(symbol artifact) version] deps))))
 
 (defn find-clojar [what]
-  (let [p (re-pattern what)]
-    (let [[group  artifac] (if (= -1 (.indexOf what "/")) [what what] (next (re-find #"^([^/]+)/(.+)$" what)))]
-    (doall (filter 
-	    (fn [{artifact-id :artifact-id group-id :group-id}] 
-	      (and
-	       (= artifact-id artifac)
-	       (= group-id group)))
-	    (read-clj (str *lein-dir* "/clojars")))))))
+  (let [[group artifact] (if-let [match (re-find #"^([^/]+)/(.+)$" what)]
+                          (next match)
+                          [what what])]
+    (->> (read-clj (str *lein-dir* "/clojars"))
+         (filter
+          (fn [{artifact-id :artifact-id group-id :group-id}]
+            (and
+             (= artifact-id artifact)
+             (= group-id group)))))))
 
 (defn choose-from-numbered-list-if-multiple
   "Return first item immediately if there is only one, otherwise prompt the user
