@@ -1,6 +1,7 @@
 (ns lein-search.core
   (:use [clojure.contrib.duck-streams :only (reader writer with-out-writer)])
   (:use [clojure.contrib.str-utils :only (chomp str-join)])
+  (:require [clojure.zip :as zip])
   (:import (java.io File PushbackReader) java.util.zip.GZIPInputStream java.net.URL))
 
 
@@ -63,19 +64,26 @@ with a numbered list of choices."
 
 ;;; Modifying defproject forms
 
-;; TODO: this won't add a :dev-dependencies or :dependencies if not already present
-(defn update-dependency-list
-  "Modify the project's dependency list of the given type by passing it through f"
+(defn- update-dependency-list
+  "Modify the project's dependency list of the given type by passing it through f.
+
+ Adds a dependency list of that type if none currently exists."
   [project dep-type f]
-  (->> project
-       (reduce
-        (fn [[form prev] n]
-          (if (= prev dep-type)
-            [(cons (vec (f n)) form) nil]
-            [(cons n form) n]))
-        [() nil])
-       first
-       reverse))
+  (let [defproject (-> project zip/seq-zip zip/down)
+        dep-list-loc (if-let [marker (->> defproject
+                                          (iterate zip/right)
+                                          (take-while identity)
+                                          (filter #(= dep-type (zip/node %)))
+                                          first)]
+          (zip/next marker)
+          (-> defproject
+              zip/rightmost
+              (zip/insert-right [])
+              (zip/insert-right dep-type)
+              zip/rightmost))]
+    (-> dep-list-loc
+        (zip/replace (f (zip/node dep-list-loc)))
+        (zip/root))))
 
 (defn add-artifact [project type artifact version]
   (update-dependency-list project type

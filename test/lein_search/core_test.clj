@@ -30,7 +30,10 @@
                        :dependencies 'a "1.2")))
   (is (= '(defproject "whatever" :dev-dependencies [[a "1.2"]])
       (add-artifact '(defproject "whatever" :dev-dependencies [])
-                    :dev-dependencies 'a "1.2"))))
+                    :dev-dependencies 'a "1.2")))
+  (is (= '(defproject "whatever" :dev-dependencies [[a "1.2"]])
+         (add-artifact '(defproject "whatever")
+                       :dev-dependencies 'a "1.2"))))
 
 (deftest updating-artifact-versions
   (is (= '(defproject "whatever" :dependencies [[a "1.2"]])
