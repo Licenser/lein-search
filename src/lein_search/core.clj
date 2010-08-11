@@ -159,17 +159,17 @@ with a numbered list of choices."
 (defn search-clojar [what]
   (let [p (re-pattern what)]
     (doall (filter
-	    (fn [{description :description artifact-id :artifact-id group-id :group-id}] 
-	      (or
-	       (re-find p (or description ""))
-	       (re-find p artifact-id)
-	       (re-find p group-id)))
-	    (read-clojars-cache)))))
+            (fn [{description :description artifact-id :artifact-id group-id :group-id}]
+              (or
+               (re-find p (or description ""))
+               (re-find p artifact-id)
+               (re-find p group-id)))
+            (read-clojars-cache)))))
 
 (defn clojars-artifact-name
   ([group-id article-id]
      (if (= group-id article-id)
        article-id
        (str group-id "/" article-id)))
-  ([{artifact-id :artifact-id group-id :group-id}] 
+  ([{artifact-id :artifact-id group-id :group-id}]
      (clojars-artifact-name group-id artifact-id)))
