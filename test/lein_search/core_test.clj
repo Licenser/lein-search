@@ -23,3 +23,19 @@
        0  "0.2-SNAPSHOT" "0.2-SNAPSHOT"
        1  "0.1"          "0.1-SNAPSHOT"
        -1 "0.1-SNAPSHOT" "0.1"))
+
+(deftest adding-artifact-versions
+  (is (= '(defproject "whatever" :dependencies [[a "1.2"]])
+         (add-artifact '(defproject "whatever" :dependencies [])
+                       :dependencies 'a "1.2")))
+  (is (= '(defproject "whatever" :dev-dependencies [[a "1.2"]])
+      (add-artifact '(defproject "whatever" :dev-dependencies [])
+                    :dev-dependencies 'a "1.2"))))
+
+(deftest updating-artifact-versions
+  (is (= '(defproject "whatever" :dependencies [[a "1.2"]])
+         (update-artifact '(defproject "whatever" :dependencies [[a "1.1"]])
+                          :dependencies 'a "1.2")))
+  (is (= '(defproject "whatever" :dev-dependencies [[a "1.2"]])
+         (update-artifact '(defproject "whatever" :dev-dependencies [[a "1.1"]])
+                          :dev-dependencies 'a "1.2"))))
