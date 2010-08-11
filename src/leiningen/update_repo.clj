@@ -1,6 +1,6 @@
 (ns leiningen.update-repo
   "Updates the clojars.org repositories index."
-  (:use lein-search.util))
+  (:use lein-search.core))
 
 
 (defn update-repo [project & args]

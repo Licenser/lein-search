@@ -1,7 +1,7 @@
 (ns leiningen.search
   "Searches the indexed clojars.org repository. Giving -v as first argument prints the versions instead of the description."
   (:use [clojure.contrib.str-utils :only (str-join re-sub)]
-        lein-search.util)
+        lein-search.core)
   (:import java.io.File))
 
 

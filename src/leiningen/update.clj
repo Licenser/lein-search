@@ -1,6 +1,6 @@
 (ns leiningen.update
   "lein update checks for newer versions of currently used dependencies and aks the user if they should be updated to the latest stable."
-  (:use lein-search.util))
+  (:use lein-search.core))
 
 
 (defn ask-for-update [artifact version new-version]

@@ -3,7 +3,7 @@
   With one parameter it will add the latest stable of the corresponding version with two arguments it will take the second argument as version.
   If the first parameter is --dev or -d it will work exactly as without --dev just that it will add a dev dependency."
   (:use [clojure.contrib.str-utils :only (str-join)]
-        lein-search.util))
+        lein-search.core))
 
 
 (defn get-version [[artifact-name available-versions]]

@@ -1,4 +1,4 @@
-(ns lein-search.util
+(ns lein-search.core
   (:use [clojure.contrib.duck-streams :only (reader writer with-out-writer)])
   (:use [clojure.contrib.str-utils :only (chomp str-join)])
   (:import (java.io File PushbackReader) java.util.zip.GZIPInputStream java.net.URL))
