@@ -64,23 +64,33 @@ with a numbered list of choices."
 
 ;;; Modifying defproject forms
 
+(defn- zip-move-until
+  "Return the next location for which pred returns true, moving using
+the supplied zip move function each time"
+  [pred move ziploc]
+  (->> ziploc (iterate move) (take-while identity) (filter pred) first))
+
+(defn- find-or-add-keyval
+  "Given the clojure.zip location of a key-value list, return the location
+ at which the value with the given key can be found, inserting it if necessary."
+  [val-list key default]
+  (let [first-form (-> val-list zip/down)]
+    (if-let [marker (zip-move-until #(= key (zip/node %))
+                                    zip/right
+                                    first-form)]
+      (zip/right marker)
+      (-> first-form
+          zip/rightmost
+          (zip/insert-right default)
+          (zip/insert-right key)
+          zip/rightmost))))
+
 (defn- update-dependency-list
   "Modify the project's dependency list of the given type by passing it through f.
 
  Adds a dependency list of that type if none currently exists."
   [project dep-type f]
-  (let [defproject (-> project zip/seq-zip zip/down)
-        dep-list-loc (if-let [marker (->> defproject
-                                          (iterate zip/right)
-                                          (take-while identity)
-                                          (filter #(= dep-type (zip/node %)))
-                                          first)]
-          (zip/next marker)
-          (-> defproject
-              zip/rightmost
-              (zip/insert-right [])
-              (zip/insert-right dep-type)
-              zip/rightmost))]
+  (let [dep-list-loc (find-or-add-keyval (zip/seq-zip project) dep-type [])]
     (-> dep-list-loc
         (zip/replace (f (zip/node dep-list-loc)))
         (zip/root))))
