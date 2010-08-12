@@ -42,3 +42,7 @@
   (is (= '(defproject "whatever" :dev-dependencies [[a "1.2"]])
          (update-artifact '(defproject "whatever" :dev-dependencies [[a "1.1"]])
                           :dev-dependencies 'a "1.2"))))
+
+(deftest picking-latest-stable-version
+  (is (= "1.2.0" (latest-stable ["1.1.8" "1.2.0-RC" "1.2.0" "1.2.1-SNAPSHOT"])))
+  (is (= "1.2" (latest-stable ["1.1" "1.2-RC" "1.2" "1.2-SNAPSHOT"]))))

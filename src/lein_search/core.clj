@@ -136,6 +136,12 @@ the supplied zip move function each time"
          :else (.compareTo v1-suffix v2-suffix)))
       version-comparison)))
 
+(defn latest-stable [versions]
+  (->> versions
+       (sort-by identity compare-versions)
+       (filter (partial re-find #"^(\d+).(\d+)(?:.(\d+))?$"))
+       last))
+
 
 ;;; Clojars cache
 
