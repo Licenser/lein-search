@@ -21,8 +21,9 @@
                       (update-artifact p dep-type (str artifact) new-version)
                       p))
                   initial
-                  (map find-updates (dep-type project))))]
-    (write-project-clj project
-                       (->> (read-project-clj project)
-                            (maybe-add-updates :dependencies)
-                            (maybe-add-updates :dev-dependencies)))))
+                  (map find-updates (dep-type project))))
+        updated-project (doall (->> (read-project-clj project)
+                                    (maybe-add-updates :dependencies)
+                                    (maybe-add-updates :dev-dependencies)))]
+    (when (yes-or-no-prompt "Overwrite project.clj?")
+      (write-project-clj project updated-project))))
