@@ -4,7 +4,7 @@
   (:require [clojure.zip :as zip])
   (:import (java.io File PushbackReader) java.util.zip.GZIPInputStream java.net.URL))
 
-
+;; TODO: check to see if leiningen.core/home-dir is defined; use it if so.
 (def *lein-dir* (str (System/getProperty "user.home") "/.lein"))
 
 ;;; User input functions
