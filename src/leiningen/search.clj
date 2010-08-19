@@ -1,9 +1,9 @@
 (ns leiningen.search
-  "Searches the indexed clojars.org repository. Giving -v as first argument prints the versions instead of the description."
+  "Searches the indexed clojars.org repository. Giving -v as first argument
+prints the versions instead of the description."
   (:use [clojure.contrib.str-utils :only (str-join re-sub)]
         lein-search.core)
   (:import java.io.File))
-
 
 (defn search [what & args]
   (if (map? what)
@@ -15,8 +15,15 @@
           what (if show-versions (first args) what)]
       (if (.exists (File. (str *lein-dir* "/clojars")))
         (let [m (search-clojar what)]
-          (println "Results for " what ":")
+          (println (format "Results for %s:" what))
           (if show-versions
-            (println (str-join "\n" (map (fn [{versions :versions artifact-id :artifact-id group-id :group-id}] (str (clojars-artifact-name group-id artifact-id) ": " (str-join ", " versions))) m)))
-            (println (str-join "\n" (map (fn [{description :description artifact-id :artifact-id group-id :group-id}] (format "%-40s - %s" (clojars-artifact-name group-id artifact-id) (re-sub #"\n\s*" " " (or description "No description given")))) m)))))
+            (doseq [{:keys [versions artifact-id group-id]} m
+                    :let [name (clojars-artifact-name group-id artifact-id)
+                          versions-string (str-join ", " versions)]]
+              (println (format "%s: %s" name versions-string)))
+            (doseq [{:keys [description artifact-id group-id]} m
+                    :let [name (clojars-artifact-name group-id artifact-id)
+                          desc (or description "No description given")
+                          desc (re-sub #"\n\s*" " " desc)]]
+              (println (format "%-40s - %s" name desc)))))
         (println "No repo index found, please run lein update first.")))))
