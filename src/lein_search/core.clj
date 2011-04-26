@@ -6,6 +6,7 @@
 
 ;; TODO: check to see if leiningen.core/home-dir is defined; use it if so.
 (def *lein-dir* (str (System/getProperty "user.home") "/.lein"))
+(def *line-sep* (str (System/getProperty "line.separator")))
 
 ;;; User input functions
 
@@ -36,7 +37,7 @@ with a numbered list of choices."
   (if (= 1 (count choices))
      (first choices)
      (do (println
-          (str-join "\n"
+          (str-join *line-sep*
                     (for [[n i] (map vector (iterate inc 1) choices)]
                       (str n ": " (formatter i)))))
          (loop []
